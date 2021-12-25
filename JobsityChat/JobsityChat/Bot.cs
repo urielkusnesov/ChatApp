@@ -10,6 +10,9 @@ namespace JobsityChat
     {
         public static void GetQuote(string stockeCode)
         {
+            string hostname = ConfigurationManager.AppSettings["hostname"];
+            string rabbitUsername = ConfigurationManager.AppSettings["username"];
+            string rabbitPassword = ConfigurationManager.AppSettings["password"];
             try
             {
                 string url = "https://stooq.com/q/l/?s=" + stockeCode + "&f=sd2t2ohlcv&h&e=csv";
@@ -23,9 +26,6 @@ namespace JobsityChat
                 var price = fields[fields.Length - 2];
                 var response = stockeCode.ToUpper() + " quote is $" + price + " per share";
 
-                string hostname = ConfigurationManager.AppSettings["hostname"];
-                string rabbitUsername = ConfigurationManager.AppSettings["username"];
-                string rabbitPassword = ConfigurationManager.AppSettings["password"];
                 RabbitMQ.Publish(hostname, rabbitUsername, rabbitPassword, response);
             }
             catch (WebException ex)
@@ -36,16 +36,19 @@ namespace JobsityChat
                     Console.WriteLine("Error while reaching stocks API");
                     Console.WriteLine(reader.ReadToEnd());
                 }
+                RabbitMQ.Publish(hostname, rabbitUsername, rabbitPassword, "Stock price could not be requested");
             }
             catch (BrokerUnreachableException ex)
             {
                 Console.WriteLine("Error while connecting to RabbitMQ server");
                 Console.WriteLine(ex.Message);
+                RabbitMQ.Publish(hostname, rabbitUsername, rabbitPassword, "Stock price could not be requested");
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Unhandled exception");
                 Console.WriteLine(ex.Message);
+                RabbitMQ.Publish(hostname, rabbitUsername, rabbitPassword, "Stock price could not be requested");
             }
         }
     }
