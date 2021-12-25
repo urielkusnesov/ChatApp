@@ -1,0 +1,27 @@
+﻿@using Model;
+@model IList<Post>
+
+@{
+    ViewBag.Title = "Jobsity Chat";
+    string username = ViewBag.Username;
+}
+
+<h2>Chat</h2>
+<div class="container">
+    @Html.Hidden("username", username, new { id = "username" })
+    <input type="text" id="message" />
+    <input type="button" id="sendmessage" value="Send" />
+    <input type="hidden" id="displayname" />
+    <ul id="discussion">
+        @foreach(var post in Model)
+        {
+            <li><strong>@post.User</strong>: @post.Message</li>
+        }
+    </ul>
+</div>
+
+@section scripts {
+    <script src="~/Scripts/jquery.signalR-2.4.2.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    <script src="~/Scripts/chat.js"></script>
+}
